@@ -123,7 +123,7 @@ class PCurveMixture:
     def prevalence(self):
         return self.mixture.posterior.prevalence.values.flatten()
 
-    def prevalence_hdi(hdi_prob = .95):
+    def prevalence_hdi(self, hdi_prob = .95):
         return az.hdi(self.prevalence, hdi_prob = hdi_prob)
 
     @property
