@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=simhigh
 #SBATCH --output=out/simhigh_%A_%a.out
-#SBATCH --error=out/simhigh_%A_a%.err
+#SBATCH --error=out/simhigh_%A_%a.err
 #SBATCH --time=06:00:00
 #SBATCH --partition=caslake
 #SBATCH --account=pi-hcn1
