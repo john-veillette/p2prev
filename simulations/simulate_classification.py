@@ -55,7 +55,7 @@ def select_pvals(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
 
 def simulation(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
     pvals = select_pvals(pvals_H0, pvals_H1, prev_H1, n_subs, seed)
-    model = PCurveMixture(pvals)
+    model = PCurveMixture(pvals, progressbar = False)
     model.fit()
     hdi = model.prevalence_hdi(HDI_PROB)
     res = dict(
@@ -66,7 +66,7 @@ def simulation(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
     )
     k = (pvals <= ALPHA).sum()
     n = len(pvals)
-    model = BinomialOutcomesModel(k, n, ALPHA)
+    model = BinomialOutcomesModel(k, n, ALPHA, progressbar = False)
     model.fit()
     res['binom_expectation'] = model.prevalence.mean()
     hdi = model.prevalence_hdi(HDI_PROB)
@@ -106,8 +106,11 @@ def main(n_subjects, power = 'high'):
 
     results = []
     for sim in range(N_SIMULATIONS):
+        if sim % 100 == 0:
+            print('Beginning simulation %d...'%(sim + 1))
         res = simulation(pvals_H0, pvals_H1, prev_H1, n_subjects, seed = sim)
         results.append(res)
+    print('Simulations complete!')
 
     df = pd.DataFrame(results)
     out_dir = 'classification'
