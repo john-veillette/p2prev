@@ -18,8 +18,8 @@ N_TRIALS = 50
 ALPHA = .05
 HDI_PROB = .95
 # average classifications accuracies for the two simulation types
-EFFSIZE1 = .6
-EFFSIZE2 = .7
+EFFSIZE_LOW = .6
+EFFSIZE_HIGH = .7
 
 
 def half_beta_rv(p_mean, size = 1, seed = None):
@@ -90,9 +90,9 @@ def main(n_subjects, power = 'high'):
     n_subs = 10000 # to choose from during simulations
     data = np.stack([simulate_subject(.5, i) for i in range(n_subs)])
     pvals_H0 = perm_test(data)
-    data = np.stack([simulate_subject(.6, i) for i in range(n_subs)])
+    data = np.stack([simulate_subject(EFFSIZE_LOW, i) for i in range(n_subs)])
     pvals1 = perm_test(data)
-    data = np.stack([simulate_subject(.7, i) for i in range(n_subs)])
+    data = np.stack([simulate_subject(EFFSIZE_HIGH, i) for i in range(n_subs)])
     pvals2 = perm_test(data)
 
     # make prevalence for one simulation type
