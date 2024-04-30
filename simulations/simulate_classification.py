@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 import os
+import tempfile
 
 cwd = os.getcwd()
 pardir = os.path.abspath(os.path.join(cwd, os.pardir))
@@ -13,7 +14,7 @@ sys.path.append(pardir)
 from p2prev import PCurveMixture
 from p2prev._benchmarking import BinomialOutcomesModel
 
-N_SIMULATIONS = 5
+N_SIMULATIONS = 1000
 N_TRIALS = 50
 ALPHA = .05
 HDI_PROB = .95
@@ -55,7 +56,7 @@ def select_pvals(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
 
 def simulation(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
     pvals = select_pvals(pvals_H0, pvals_H1, prev_H1, n_subs, seed)
-    model = PCurveMixture(pvals, progressbar = False)
+    model = PCurveMixture(pvals, progressbar = False, nuts_sampler = 'numpyro')
     model.fit()
     hdi = model.prevalence_hdi(HDI_PROB)
     res = dict(
@@ -66,7 +67,7 @@ def simulation(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
     )
     k = (pvals <= ALPHA).sum()
     n = len(pvals)
-    model = BinomialOutcomesModel(k, n, ALPHA, progressbar = False)
+    model = BinomialOutcomesModel(k, n, ALPHA, progressbar = False, nuts_sampler = 'numpyro')
     model.fit()
     res['binom_expectation'] = model.prevalence.mean()
     hdi = model.prevalence_hdi(HDI_PROB)
