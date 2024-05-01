@@ -24,6 +24,7 @@ class BinomialOutcomesModel:
         if 'cores' not in sampler_kwargs:
             sampler_kwargs['cores'] = 5
         self.sampler_kwargs = sampler_kwargs
+        self._model = None
 
     def fit(self):
         with pm.Model() as binom_model:
@@ -37,7 +38,17 @@ class BinomialOutcomesModel:
             # and now we sample...
             idata = pm.sample(**self.sampler_kwargs)
         self._trace = idata
+        self._model = binom_model
         return idata
+
+    @property
+    def map(self):
+        try:
+            return 1. * pm.find_MAP(
+                model = self._model, progressbar = False
+                )['prevalence']
+        except:
+            self.trace # trigger not-yet-fit exception
 
     @property
     def trace(self):

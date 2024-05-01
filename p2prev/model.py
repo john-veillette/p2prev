@@ -28,6 +28,7 @@ class PCurveMixture:
         self._mix = None
         self._H1 = None
         self._ps = pvals
+        self._model = None
         assert(effect_size_prior > 0)
         self.prior = effect_size_prior
         if 'idata_kwargs' not in sampler_kwargs:
@@ -57,11 +58,21 @@ class PCurveMixture:
                 comp_dists = [pcurve_H0, pcurve_H1],
                 observed = self._ps
             )
-            # and sample from it
+            # and sample from posterior
             idata = pm.sample(**self.sampler_kwargs)
 
         self._mix = idata
+        self._model = mixture_model
         return idata
+
+    @property
+    def map(self):
+        try:
+            return 1. * pm.find_MAP(
+                model = self._model, progressbar = False
+                )['prevalence']
+        except:
+            self.mixture # trigger not-yet-fit exception
 
     def fit_alternative(self):
         with pm.Model() as alltrue_model:

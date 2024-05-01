@@ -2,7 +2,7 @@
 #SBATCH --job-name=simlow
 #SBATCH --output=out/simlow_%A_%a.out
 #SBATCH --error=out/simlow_%A_%a.err
-#SBATCH --time=06:00:00
+#SBATCH --time=08:00:00
 #SBATCH --partition=caslake
 #SBATCH --account=pi-hcn1
 #SBATCH --nodes=1

@@ -63,16 +63,22 @@ def simulation(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
         prevalence = prev_H1,
         pcurve_expectation = model.prevalence.mean(),
         pcurve_hdi_low = hdi[0],
-        pcurve_hdi_high = hdi[1]
+        pcurve_hdi_high = hdi[1],
+        pcurve_map = model.map
     )
     k = (pvals <= ALPHA).sum()
     n = len(pvals)
-    model = BinomialOutcomesModel(k, n, ALPHA, progressbar = False, nuts_sampler = 'numpyro')
+    model = BinomialOutcomesModel(
+        k, n, ALPHA,
+        progressbar = False,
+        nuts_sampler = 'numpyro'
+        )
     model.fit()
     res['binom_expectation'] = model.prevalence.mean()
     hdi = model.prevalence_hdi(HDI_PROB)
     res['binom_hdi_low'] = hdi[0]
     res['binom_hdi_high'] = hdi[1]
+    res['binom_map'] = model.map
     return res
 
 perm_test = lambda data: permutation_test(
