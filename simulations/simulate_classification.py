@@ -19,8 +19,8 @@ N_TRIALS = 50
 ALPHA = .05
 HDI_PROB = .95
 # average classifications accuracies for the two simulation types
-EFFSIZE_LOW = .6
-EFFSIZE_HIGH = .7
+EFFSIZE_LOW = .65
+EFFSIZE_HIGH = .75
 
 
 def half_beta_rv(p_mean, size = 1, seed = None):
@@ -88,7 +88,8 @@ perm_test = lambda data: permutation_test(
     axis = 1,
     alternative = 'greater',
     permutation_type = 'pairings',
-    n_resamples = 1000
+    n_resamples = 1000,
+    random_state = 0
 ).pvalue
 
 def main(n_subjects, power = 'high'):
