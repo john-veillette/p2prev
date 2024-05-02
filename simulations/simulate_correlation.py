@@ -89,7 +89,7 @@ def main(n_subjects, power = 'high'):
 
     # generate a bunch of p-values from a permutation test for accuracy
     n_subs = 100000 # to choose from during simulations
-    pvals1 = sim_subs(n_subs, N_TRIALS, 0., seed = 0)
+    pvals_H0 = sim_subs(n_subs, N_TRIALS, 0., seed = 0)
     pvals1 = sim_subs(n_subs, N_TRIALS, EFFSIZE_LOW, seed = 1)
     pvals2 = sim_subs(n_subs, N_TRIALS, EFFSIZE_HIGH, seed = 2)
 
