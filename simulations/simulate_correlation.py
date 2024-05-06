@@ -18,7 +18,7 @@ N_TRIALS = 50
 ALPHA = .05
 HDI_PROB = .95
 # average classifications accuracies for the two simulation types
-EFFSIZE_LOW = .3
+EFFSIZE_LOW = .25
 EFFSIZE_HIGH = .5
 
 
