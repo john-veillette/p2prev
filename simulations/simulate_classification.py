@@ -28,7 +28,7 @@ def half_beta_rv(p_mean, size = 1, seed = None):
     generates a random value between 0.5 and 1.0 with specified mean
     '''
     trunc_mean = (p_mean - .5) * 2
-    a, b = Beta.get_alpha_beta(mu = trunc_mean, sigma = .1)
+    a, b = Beta.get_alpha_beta(mu = trunc_mean, sigma = .02)
     trunc_rv = beta.rvs(a, b, size = size, random_state = seed)
     return np.squeeze(trunc_rv/2 + .5)
 

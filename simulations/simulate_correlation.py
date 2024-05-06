@@ -28,7 +28,7 @@ def sim_subs(n_subs, n_trials, effsize = 0, seed = None):
         rs = np.zeros(n_subs)
     else:
         # add some population-level variance to effect size
-        a, b = Beta.get_alpha_beta(mu = effsize, sigma = .2)
+        a, b = Beta.get_alpha_beta(mu = effsize, sigma = .01)
         rs = beta.rvs(a, b, size = n_subs, random_state = seed)
     xy = [
         rng.multivariate_normal([0,0], [[1,r],[r,1]], size = n_trials)
