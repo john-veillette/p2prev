@@ -1,3 +1,5 @@
+from numpyro import set_host_device_count
+set_host_device_count(5)
 from scipy.stats import binom, beta, permutation_test
 from pymc.distributions.continuous import Beta
 import numpy as np
