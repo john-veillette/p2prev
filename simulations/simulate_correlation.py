@@ -18,8 +18,8 @@ N_TRIALS = 50
 ALPHA = .05
 HDI_PROB = .95
 # average classifications accuracies for the two simulation types
-EFFSIZE_LOW = .25
-EFFSIZE_HIGH = .5
+EFFSIZE_LOW = .3
+EFFSIZE_HIGH = .4
 
 
 def sim_subs(n_subs, n_trials, effsize = 0, seed = None):
