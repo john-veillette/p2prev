@@ -7,9 +7,36 @@ from arviz.stats.stats import _calculate_ics
 from .pcurve import p_cdf
 
 def p_curve_loglik(p, delta):
+    '''
+    log-likelihood of p-values from a one-tailed
+    Z-test with known unit variance and one observation
+    '''
     Z = -pm.Normal.icdf(p, 0, 1)
     logp = pm.Normal.logp(Z, delta, 1) - pm.Normal.logp(Z, 0, 1)
     return logp
+
+def _half_p_loglik(p, d, nu):
+    '''
+    log-likelihood of  p-values of a
+    one-tailed t-test with effect size `d` and degrees
+    of freedom `nu`.
+    '''
+    n = (nu + 2)/2 # "sample size"
+    nct = d * np.sqrt(n/2) # non-centrality parameter
+    T = -1.*pm.StudentT.icdf(p, nu, mu = 0., sigma = 1.)
+    numer =  pm.StudentT.logp(T, nu, mu = nct, sigma = 1.)
+    denom = pm.StudentT.logp(T, nu, mu = 0., sigma = 1.)
+    return numer - denom
+
+def p_loglik_overdisp(p, d, nu):
+    '''
+    log-likelihood for p-values of a
+    two-tailed t-test with effect size `d` and degrees
+    of freedom `nu`.
+    '''
+    a = _half_p_loglik(p/2, d, nu)
+    b = _half_p_loglik(1 - p/2, d, nu)
+    return pm.logaddexp(a, b) - np.log(2.)
 
 class PCurveMixture:
 
