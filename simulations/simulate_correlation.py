@@ -1,7 +1,6 @@
 from numpyro import set_host_device_count
 set_host_device_count(5)
-from scipy.stats import binom, beta, pearsonr
-from pymc.distributions.continuous import Beta
+from scipy.stats import binom, pearsonr
 import numpy as np
 import pandas as pd
 import argparse
@@ -25,22 +24,20 @@ EFFSIZE_HIGH = .4
 
 
 def sim_subs(n_subs, n_trials, effsize = 0, seed = None):
+    '''
+    generate data with specified correlation
+    '''
     rng = np.random.default_rng(seed)
-    if effsize == 0:
-        rs = np.zeros(n_subs)
-    else:
-        # add some population-level variance to effect size
-        a, b = Beta.get_alpha_beta(mu = effsize, sigma = .01)
-        rs = beta.rvs(a, b, size = n_subs, random_state = seed)
+    rs = effsize * np.ones(n_subs)
     xy = [
         rng.multivariate_normal([0,0], [[1,r],[r,1]], size = n_trials)
         for r in rs
     ]
-    corrs = [
-        pearsonr(dat[:,0], dat[:,1]).pvalue
+    ps = [
+        pearsonr(dat[:,0], dat[:,1]).pvalue # two sided p-value
         for dat in xy
     ]
-    return np.array(corrs)
+    return np.array(ps)
 
 def select_pvals(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
     rng = np.random.default_rng(seed)
@@ -75,17 +72,6 @@ def simulation(pvals_H0, pvals_H1, prev_H1, n_subs, seed = None):
     res['binom_hdi_high'] = hdi[1]
     res['binom_map'] = model.map
     return res
-
-perm_test = lambda data: permutation_test(
-    [data[...,0], data[...,1]],
-    statistic = lambda y, y_hat, axis: (y == y_hat).mean(axis),
-    vectorized = True,
-    axis = 1,
-    alternative = 'greater',
-    permutation_type = 'pairings',
-    n_resamples = 1000,
-    random_state = 0
-).pvalue
 
 def main(n_subjects, power = 'high'):
 
