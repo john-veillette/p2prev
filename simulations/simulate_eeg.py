@@ -145,8 +145,9 @@ def simulate_group(raw, erp, prev, effsize, n_subs = N_SUBJECTS, seed = None):
             p = ps.min()
         else: # no clusters found!
             p = 1/(1024 + 1) # so assign highest p-val
+        if H1_true[i] == 1:
+            n_rej += int(p <= ALPHA)
         ps_sub.append(p)
-        n_rej += int(p <= ALPHA)
         # save noisy ERPs for later group-level perm test
         cond1.append(epochs['1'].average())
         cond2.append(epochs['2'].average())

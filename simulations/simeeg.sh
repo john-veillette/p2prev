@@ -2,7 +2,7 @@
 #SBATCH --job-name=simeeg
 #SBATCH --output=out/simeeg_%A_%a.out
 #SBATCH --error=out/simeeg_%A_%a.err
-#SBATCH --time=00:10:00
+#SBATCH --time=00:06:00
 #SBATCH --partition=caslake
 #SBATCH --account=pi-hcn1
 #SBATCH --nodes=1
