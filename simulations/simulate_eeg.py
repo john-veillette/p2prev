@@ -20,10 +20,11 @@ from p2prev._benchmarking import BinomialOutcomesModel
 
 PREV_HIGH = .8
 PREV_LOW = .4
-EFFSIZE_HIGH = 4. # not on scale with effect size param of model
-EFFSIZE_LOW = 2.
+EFFSIZE_HIGH = 2. # not on scale with effect size param of model
+EFFSIZE_LOW = 1.5
 ALPHA = .05
 HDI_PROB = .95
+N_SUBJECTS = 30 # n_trials is hard coded in make_epochs() as 100
 
 def load_eeg():
     '''
@@ -101,7 +102,7 @@ def make_epochs(raw, erp, effsize, seed = None):
     epochs._data += (effect * effsize) # in place
     return epochs.drop_channels(["T8"])
 
-def simulate_group(raw, erp, prev, effsize, n_subs = 20, seed = None):
+def simulate_group(raw, erp, prev, effsize, n_subs = N_SUBJECTS, seed = None):
     '''
     simulates a group of subjects with specified H1 prevalence and effect size
 
@@ -109,14 +110,17 @@ def simulate_group(raw, erp, prev, effsize, n_subs = 20, seed = None):
     ---------
     erp_data : np.array of shape (n_subs, n_times, n_channels)
         The ERP difference waves for subjects in group
-    ps_sub: np.array of shape (n_subs,)
+    ps_sub : np.array of shape (n_subs,)
         The within-subject p-value for each subject in group
     adjacency
         Adjacency matrix for channels
+    H1_frac_rej : int
+        Fraction of subjects for whom H1 where null was rejected
     '''
     ps_sub = []
     cond1 = []
     cond2 = []
+    n_rej = 0
 
     # decide which subjects will express H1
     rng = np.random.default_rng(seed)
@@ -142,6 +146,7 @@ def simulate_group(raw, erp, prev, effsize, n_subs = 20, seed = None):
         else: # no clusters found!
             p = 1/(1024 + 1) # so assign highest p-val
         ps_sub.append(p)
+        n_rej += int(p <= ALPHA)
         # save noisy ERPs for later group-level perm test
         cond1.append(epochs['1'].average())
         cond2.append(epochs['2'].average())
@@ -150,7 +155,7 @@ def simulate_group(raw, erp, prev, effsize, n_subs = 20, seed = None):
     evo1 = np.stack([evo.get_data() for evo in cond1])
     evo2 = np.stack([evo.get_data() for evo in cond2])
     data = (evo2 - evo1).swapaxes(1, 2)
-    return data, np.array(ps_sub), adj
+    return data, np.array(ps_sub), adj, n_rej / H1_true.sum()
 
 def fit_models(pvals):
     model = PCurveMixture(pvals, progressbar = False)
@@ -206,26 +211,30 @@ def main(seed):
     raw, erp = load_eeg()
     res = dict(
         increase_prev = dict(),
-        increase_pow = dict()
+        increase_pow = dict(),
+        baseline = dict()
     )
 
     # simulate baseline group
-    erp0, ps0, adj = simulate_group(raw, erp, PREV_LOW, EFFSIZE_LOW, seed = rng)
+    erp0, ps0, adj, rej = simulate_group(raw, erp, PREV_LOW, EFFSIZE_LOW, seed = rng)
     pcurve0, binom0 = fit_models(ps0)
+    res['baseline']['frac_H1_rej'] = rej
 
     # simulate another group with increase in prevalence
-    erp1, ps1, _ = simulate_group(raw, erp, PREV_HIGH, EFFSIZE_LOW, seed = rng)
+    erp1, ps1, _, rej = simulate_group(raw, erp, PREV_HIGH, EFFSIZE_LOW, seed = rng)
     pcurve1, binom1 = fit_models(ps1)
     res['increase_prev']['pcurve'] = compare_models(pcurve0, pcurve1)
     res['increase_prev']['binom'] = compare_models(binom0, binom1)
-    res['increase_prev']['pval'] = test_difference(erp0, erp1, adj, rng)
+    res['increase_prev']['pval_group'] = test_difference(erp0, erp1, adj, rng)
+    res['increase_prev']['frac_H1_rej'] = rej
 
     # and one with increase in power
-    erp2, ps2, _ = simulate_group(raw, erp, PREV_LOW, EFFSIZE_HIGH, seed = rng)
+    erp2, ps2, _, rej = simulate_group(raw, erp, PREV_LOW, EFFSIZE_HIGH, seed = rng)
     pcurve2, binom2 = fit_models(ps2)
     res['increase_pow']['pcurve'] = compare_models(pcurve0, pcurve2)
     res['increase_pow']['binom'] = compare_models(binom0, binom2)
-    res['increase_pow']['pval'] = test_difference(erp0, erp2, adj, rng)
+    res['increase_pow']['pval_group'] = test_difference(erp0, erp2, adj, rng)
+    res['increase_prev']['frac_H1_rej'] = rej
 
     # now save results
     out_dir = 'EEG'

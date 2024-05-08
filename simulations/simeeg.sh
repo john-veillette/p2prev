@@ -7,7 +7,7 @@
 #SBATCH --account=pi-hcn1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=5
-#SBATCH --array=1-100
+#SBATCH --array=1-1000
 
 cd ~/p2prev/simulations
 source activate pymc_env
