@@ -18,9 +18,9 @@ sys.path.append(pardir)
 from p2prev import PCurveMixture
 from p2prev._benchmarking import BinomialOutcomesModel
 
-PREV_HIGH = .8
-PREV_LOW = .4
-EFFSIZE_HIGH = 2. # not on scale with effect size param of model
+PREV_HIGH = .9
+PREV_LOW = .3
+EFFSIZE_HIGH = 2.5 # not on scale with effect size param of model
 EFFSIZE_LOW = 1.5
 ALPHA = .05
 HDI_PROB = .95
@@ -186,8 +186,10 @@ def compare_models(mod0, mod1):
     res = dict(
         prevdiff_exp = prev_diff.mean(),
         prevdiff_hdi = az.hdi(prev_diff, hdi_prob = HDI_PROB).tolist(),
+        prevdiff_prob = (prev_diff > 0).mean(),
         powdiff_exp = pow_diff.mean(),
-        powdiff_hdi = az.hdi(pow_diff, hdi_prob = HDI_PROB).tolist()
+        powdiff_hdi = az.hdi(pow_diff, hdi_prob = HDI_PROB).tolist(),
+        powdiff_prob = (pow_diff > 0).mean(),
     )
     return res
 
@@ -235,7 +237,7 @@ def main(seed):
     res['increase_pow']['pcurve'] = compare_models(pcurve0, pcurve2)
     res['increase_pow']['binom'] = compare_models(binom0, binom2)
     res['increase_pow']['pval_group'] = test_difference(erp0, erp2, adj, rng)
-    res['increase_prev']['frac_H1_rej'] = rej
+    res['increase_pow']['frac_H1_rej'] = rej
 
     # now save results
     out_dir = 'EEG'
