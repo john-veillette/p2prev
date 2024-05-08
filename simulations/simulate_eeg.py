@@ -102,7 +102,8 @@ def make_epochs(raw, erp, effsize, seed = None):
     epochs._data += (effect * effsize) # in place
     return epochs.drop_channels(["T8"])
 
-def simulate_group(raw, erp, prev, effsize, n_subs = N_SUBJECTS, seed = None):
+def simulate_group(raw, erp, prev, effsize, n_subs = N_SUBJECTS,
+                                        seed = None, H1_true = None):
     '''
     simulates a group of subjects with specified H1 prevalence and effect size
 
@@ -124,7 +125,8 @@ def simulate_group(raw, erp, prev, effsize, n_subs = N_SUBJECTS, seed = None):
 
     # decide which subjects will express H1
     rng = np.random.default_rng(seed)
-    H1_true = rng.binomial(1, prev, size = n_subs)
+    if H0_true is None:
+        H1_true = rng.binomial(1, prev, size = n_subs)
 
     for i in range(n_subs):
         # generate data for one subject
