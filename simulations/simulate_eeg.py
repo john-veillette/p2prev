@@ -18,8 +18,8 @@ sys.path.append(pardir)
 from p2prev import PCurveMixture
 from p2prev._benchmarking import BinomialOutcomesModel
 
-PREV_HIGH = .9
-PREV_LOW = .3
+PREV_HIGH = .95
+PREV_LOW = .45
 EFFSIZE_HIGH = 2.5 # not on scale with effect size param of model
 EFFSIZE_LOW = 1.5
 ALPHA = .05
@@ -242,7 +242,7 @@ def main(seed):
     res['increase_pow']['frac_H1_rej'] = rej
 
     # now save results
-    out_dir = 'EEG'
+    out_dir = 'between'
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     fpath = os.path.join(out_dir, 'seed-%d.json'%seed)
