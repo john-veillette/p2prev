@@ -125,7 +125,7 @@ def simulate_group(raw, erp, prev, effsize, n_subs = N_SUBJECTS,
 
     # decide which subjects will express H1
     rng = np.random.default_rng(seed)
-    if H0_true is None:
+    if H1_true is None:
         H1_true = rng.binomial(1, prev, size = n_subs)
 
     for i in range(n_subs):
