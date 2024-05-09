@@ -1,1 +1,1 @@
-from .model import PCurveMixture
+from .model import PCurveMixture, PCurveWithinGroupDifference

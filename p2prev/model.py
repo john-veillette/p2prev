@@ -193,3 +193,205 @@ class PCurveMixture:
     def prior_predictive_power_hdi(self, alpha, hdi_prob = .95):
         pow = self.prior_predictive_power(alpha)
         return az.hdi(pow.power.to_numpy(), hdi_prob = hdi_prob)
+
+class PCurveWithinGroupDifference:
+
+    def __init__(self, pvals1, pvals2, effect_size_prior = 1.5, **sampler_kwargs):
+        '''
+        Fits p-curve mixture model for two within-subject hypothesis tests
+        applied to the SAME group of subjects. Estimates the difference in
+        prevalence of the two effects tested, again in the SAME subjects.
+        (If instead you want to compare prevalence of the same effect in two
+        different groups of subjects, i.e. a "between group" difference, you
+        can just fit a `PCurveMixture` to each group individually and
+        subtract posterior samples from the two models to get samples from the
+        posterior of the difference.)
+
+        We assume that the effect size for each test is fixed, i.e. no
+        effect size information is explicitly pooled between tests.
+        However, we account for the possibility that expressing H1 makes a
+        subject more likely to express H2 or the reverse. (The degree of such
+        covariation is something the model learns from the data.)
+
+        Arguments
+        ---------
+        pvals1 : np.array of size (n_subjects,)
+            The observed p-values for hypothesis test of H0 vs. H1.
+        pvals2 : np.array of size (n_subjects,)
+            The observed p-values for hypotheiss test of H0 vs. H2.
+            Order
+        effect_size_prior : float
+            Mean of the exponential distribution used as an effect size prior.
+
+        Notes
+        ---------
+        I had to do some PyMC trickery to get PyMC to account for covariation
+        between H1 and H2 prevalence the way we need it to, at the cost of
+        being able to use built-in model comparison techniques as in the
+        main `PCurveMixture` class. If you want to compare to the H0 only model
+        or H1/H2 only models, then you should do that for H1 and H2 individually
+        using `PCurveMixture`.
+        '''
+        try:
+            assert(len(pvals1) == len(pvals2))
+        except:
+            raise Exception(
+                'First two arguments must be paired series of p-values, ' + \
+                'but args were different shapes!'
+            )
+        self._mix = None
+        self._ps1 = pvals1
+        self._ps2 = pvals2
+        self._model = None
+        assert(effect_size_prior > 0)
+        self.prior = effect_size_prior
+        if 'random_seed' not in sampler_kwargs:
+            sampler_kwargs['random_seed'] = 1
+        if 'draws' not in sampler_kwargs:
+            sampler_kwargs['draws'] = 1000
+        if 'chains' not in sampler_kwargs:
+            sampler_kwargs['chains'] = 5
+        if 'cores' not in sampler_kwargs:
+            sampler_kwargs['cores'] = 5
+        self.sampler_kwargs = sampler_kwargs
+
+    def fit(self):
+        with pm.Model() as mixture_model:
+
+            # define likelihoods of p-values under H0, H1, and H2
+            delta = pm.Exponential('effect_size', lam = 1/self.prior, shape = 2)
+            pm.Deterministic('effect_size_diff', delta[1] - delta[0])
+            pcurve_H1 = pm.CustomDist.dist(delta[0], logp = p_curve_loglik)
+            pcurve_H2 = pm.CustomDist.dist(delta[1], logp = p_curve_loglik)
+            pcurve_H0 = pm.Uniform.dist(0, 1)
+
+            # probabilities of combinations of H0, H1, and H2 being true
+            k = pm.Dirichlet('prevalence', np.ones(4)) # prior
+            k00, k10, k01, k11 = k[0], k[1], k[2], k[3] # notation from Ince 
+            prev1 = pm.Deterministic('prevalence_H1', k10 + k11)
+            prev2 = pm.Deterministic('prevalence_H2', k01 + k11)
+            pm.Deterministic('prevalence_diff', prev2 - prev1)
+
+            # define likelihoods for combinations of H0, H1, and H2 being true
+            H1_logl_1 = pm.logp(pcurve_H1, self._ps1)
+            H0_logl_1 = pm.logp(pcurve_H0, self._ps1)
+            H2_logl_2 = pm.logp(pcurve_H2, self._ps2)
+            H0_logl_2 = pm.logp(pcurve_H0, self._ps2)
+            logl_00 = H0_logl_1 + H0_logl_2
+            logl_10 = H1_logl_1 + H0_logl_2
+            logl_01 = H0_logl_1 + H2_logl_2
+            logl_11 = H1_logl_1 + H2_logl_2
+
+            # and marginalize these likelihoods over class probabilities
+            logp_marg = pm.logaddexp(
+                pm.math.log(k00) + logl_00,
+                pm.math.log(k10) + logl_10,
+                pm.math.log(k01) + logl_01,
+                pm.math.log(k11) + logl_11
+            )
+            # logp_marg isn't technically a valid PyMC likelihood
+            # (though it's a real log-likelihood), but it will be treated
+            # as one during sampling if we specify it as a "potential"
+            pm.Potential('likelihood', logp_marg)
+
+            # so now we can sample from posterior
+            idata = pm.sample(**self.sampler_kwargs)
+
+        # keep model and posterior samples in memory
+        self._mix = idata
+        self._model = mixture_model
+
+    @property
+    def mixture(self):
+        if self._mix is None:
+            raise Exception('Must call `PCurveMixture.fit()` first!')
+        else:
+            return self._mix
+
+    def summary(self, **summary_kwargs):
+        if len(summary_kwargs) == 0:
+            summary_kwargs['var_names'] = [
+                'effect_size', 'effect_size_diff',
+                'prevalence_H1', 'prevalence_H2',
+                'prevalence_diff'
+            ]
+        return az.summary(self.mixture, **summary_kwargs)
+
+    def plot_trace(self, **kwargs):
+        if len(kwargs) == 0:
+            kwargs['var_names'] = [
+                'effect_size', 'effect_size_diff',
+                'prevalence_H1', 'prevalence_H2',
+                'prevalence_diff'
+            ]
+        return az.plot_trace(self.mixture, **kwargs)
+
+    @property
+    def prevalence_H1(self):
+        return self.mixture.posterior.prevalence_H1.values.flatten()
+
+    @property
+    def prevalence_H2(self):
+        return self.mixture.posterior.prevalence_H2.values.flatten()
+
+    @property
+    def prevalence_diff(self):
+        '''
+        posterior samples for H2 prevalence minus H1 prevalence
+        '''
+        return self.mixture.posterior.prevalence_diff.values.flatten()
+
+    @property
+    def prob_H2_prev_greater(self):
+        '''
+        posterior probability H2 prevalence minus H1 prevalence is positive
+        '''
+        return (self.prevalence_diff > 0).mean()
+
+    def prevalence_diff_hdi(self, hdi_prob = .95):
+        '''
+        HDI for H2 prevalence minus H1 prevalence
+        '''
+        return az.hdi(self.prevalence_diff, hdi_prob = hdi_prob)
+
+    @property
+    def effect_size_H1(self):
+        return self.mixture.posterior.effect_size.values[..., 0].flatten()
+
+    @property
+    def effect_size_H2(self):
+        return self.mixture.posterior.effect_size.values[..., 1].flatten()
+
+    @property
+    def effect_size_diff(self):
+        '''
+        posterior samples for H2 - H1 effect sizes
+        '''
+        return self.mixture.posterior.effect_size_diff.values.flatten()
+
+    @property
+    def prob_H2_effect_size_greater(self):
+        '''
+        posterior probability H2 effect minus H1 effect is positive
+        '''
+        return (self.effect_size_diff > 0).mean()
+
+    def effect_size_diff_hdi(self, hdi_prob = .95):
+        '''
+        HDI for H2 - H1 effect sizes
+        '''
+        return az.hdi(self.effect_size_diff, hdi_prob = hdi_prob)
+
+    def power_diff(self, alpha):
+        '''
+        posterior samples for power given H2 minus power given H1
+        at a given significance level `alpha`.
+        '''
+        pow1 = p_cdf(alpha, self.effect_size_H1)
+        pow2 = p_cdf(alpha, self.effect_size_H2)
+        pow_diff = pow2 - pow1
+        return pow_diff
+
+    def power_diff_hdi(self, alpha, hdi_prob = .95):
+        pow = self.power_diff(alpha)
+        return az.hdi(pow, hdi_prob = hdi_prob)
