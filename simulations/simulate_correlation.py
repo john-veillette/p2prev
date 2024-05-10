@@ -1,5 +1,3 @@
-from numpyro import set_host_device_count
-set_host_device_count(5)
 from scipy.stats import binom, pearsonr
 import numpy as np
 import pandas as pd
