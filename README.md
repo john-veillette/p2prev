@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11459065.svg)](https://doi.org/10.5281/zenodo.11459065)
 # p2prev: a convenient interface for fitting p-curve mixture models 
 
 $p$-curve mixture models are a method for estimating the population prevalence of an effect from the results of multiple within-subject hypothesis tests (i.e. $p$-values) of that effect. Unlike other prevalence estimation methods for this setting, $p$-curve mixture models are applicable even in the presence of uncertainty about the sensitivity (i.e. statistical power) of the within-subject test.
@@ -38,4 +39,8 @@ pip install git+https://github.com/john-veillette/p2prev.git
 ```
 but do so at your own peril! I may sometimes break things as I work on the development version.
 
+### Citing this package
 
+We have minted a DOI so that you can cite the `p2prev` package (or other contents of this repository) and be confident that the link in your citation will always lead to the same place. The DOI for the current version should always be near the top of this page on GitHub, or you can use the permanent DOI ([10.5281/zenodo.11459064](https://zenodo.org/doi/10.5281/zenodo.11459064)), which always links to the latest release.
+
+We hope to release a manuscript describing the $p$-curve mixture method soon, after which we will post a citation for that here. If you use $p$-curve mixtures for prevalence estimation, with or without the `p2prev` package, please be so kind as to cite our work. 
