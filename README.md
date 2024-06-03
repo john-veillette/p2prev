@@ -27,7 +27,15 @@ We recommend installing `pymc` before trying to install `p2prev`. (I recommend v
 
 Once you've installed `pymc`, you can simply run 
 ```
+pip install p2prev
+```
+to install the latest stable version.
+
+
+You could also install the development version with
+```
 pip install git+https://github.com/john-veillette/p2prev.git
 ```
+but do so at your own peril! I may sometimes break things as I work on the development version.
 
 
