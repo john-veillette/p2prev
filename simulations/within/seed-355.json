@@ -1,0 +1,41 @@
+{
+    "increase_prev": {
+        "pcurve": {
+            "prevdiff_exp": 0.4196992824653219,
+            "prevdiff_hdi": [
+                -0.04592059793879813,
+                0.8186851361021198
+            ],
+            "prevdiff_prob": 0.9524,
+            "powdiff_exp": 0.2573698486953589,
+            "powdiff_hdi": [
+                -0.1836960199146207,
+                0.6008897441402048
+            ],
+            "powdiff_prob": 0.8828
+        },
+        "pval_group": 0.0048828125,
+        "frac_H1_rej": 0.6071428571428571
+    },
+    "increase_pow": {
+        "pcurve": {
+            "prevdiff_exp": 0.02829553352818094,
+            "prevdiff_hdi": [
+                -0.24002821618334655,
+                0.30518819604510117
+            ],
+            "prevdiff_prob": 0.595,
+            "powdiff_exp": 0.30829298532016847,
+            "powdiff_hdi": [
+                -0.07238792164568164,
+                0.6518341787369664
+            ],
+            "powdiff_prob": 0.942
+        },
+        "pval_group": 0.0517578125,
+        "frac_H1_rej": 0.75
+    },
+    "baseline": {
+        "frac_H1_rej": 0.4166666666666667
+    }
+}
