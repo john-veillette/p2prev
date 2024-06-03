@@ -1,0 +1,1 @@
+Files in this folder contain data from published studies (see notebooks in "examples" folder for details). If you use these datasets in our own work, please cite the original studies rather than this repository. All datasets are made available under their original licenses.
