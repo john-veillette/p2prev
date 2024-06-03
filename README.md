@@ -27,7 +27,7 @@ We recommend installing `pymc` before trying to install `p2prev`. (I recommend v
 
 Once you've installed `pymc`, you can simply run 
 ```
-pip install p2prev
+pip install git+https://github.com/john-veillette/p2prev.git
 ```
 
 
