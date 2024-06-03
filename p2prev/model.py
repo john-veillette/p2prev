@@ -39,19 +39,27 @@ def p_loglik_overdisp(p, d, nu):
     return pm.logaddexp(a, b) - np.log(2.)
 
 class PCurveMixture:
+    '''
+    A user-friendly wrapper for fitting a p-curve mixture model.
+
+    Arguments
+    ---------
+    pvals : np.array of size (n_observations,)
+        The observed p-values
+    effect_size_prior : float
+        Mean of the exponential distribution used as an effect size prior.
+        You can use `PCurveMixture.prior_predictive_power(alpha)` to see
+        how this parameter translates to a prior over Type II error for a
+        given false positive rate `alpha`.
+    **sampler_kwargs
+        You can input any valid argument to `pymc.sample` if you wish the change
+        the Monte-Carlo sampling settings. By default, 5 chains of 1000 samples
+        will be drawn from the posterior, and this will be distributed across
+        five CPUs if available. The same random seed will be used each time.
+    '''
 
     def __init__(self, pvals, effect_size_prior = 1.5, **sampler_kwargs):
-        '''
-        Arguments
-        ---------
-        pvals : np.array of size (n_observations,)
-            The observed p-values
-        effect_size_prior : float
-            Mean of the exponential distribution used as an effect size prior.
-            You can use `PCurveMixture.prior_predictive_power(alpha)` to see
-            how this parameter translates to a prior over Type II error for a
-            given false positive rate `alpha`.
-        '''
+
         self._mix = None
         self._H1 = None
         self._ps = pvals
@@ -195,43 +203,49 @@ class PCurveMixture:
         return az.hdi(pow.power.to_numpy(), hdi_prob = hdi_prob)
 
 class PCurveWithinGroupDifference:
+    '''
+    Fits p-curve mixture model for two within-subject hypothesis tests
+    applied to the SAME group of subjects. Estimates the difference in
+    prevalence of the two effects tested, again in the SAME subjects.
+    (If instead you want to compare prevalence of the same effect in two
+    different groups of subjects, i.e. a "between group" difference, you
+    can just fit a `PCurveMixture` to each group individually and
+    subtract posterior samples from the two models to get samples from the
+    posterior of the difference.)
+
+    We assume that the effect size for each test is fixed, i.e. no
+    effect size information is explicitly pooled between tests.
+    However, we account for the possibility that expressing H1 makes a
+    subject more likely to express H2 or the reverse. (The degree of such
+    covariation is something the model learns from the data.)
+
+    Arguments
+    ---------
+    pvals1 : np.array of size (n_subjects,)
+        The observed p-values for within-subject hypothesis test of H0 vs. H1.
+    pvals2 : np.array of size (n_subjects,)
+        The observed p-values for within-subject hypothesis test of H0 vs. H2.
+        Subject order should be the same as in `pvals`.
+    effect_size_prior : float
+        Mean of the exponential distribution used as an effect size prior.
+    **sampler_kwargs 
+        You can input any valid argument to `pymc.sample` if you wish the change
+        the Monte-Carlo sampling settings. By default, 5 chains of 1000 samples
+        will be drawn from the posterior, and this will be distributed across
+        five CPUs if available. The same random seed will be used each time.
+
+    Notes
+    ---------
+    I had to do some PyMC trickery to get PyMC to account for covariation
+    between H1 and H2 prevalence the way we need it to, at the cost of
+    being able to use built-in model comparison techniques as in the
+    main `PCurveMixture` class. If you want to compare to the H0 only model
+    or H1/H2 only models, then you should do that for H1 and H2 individually
+    using `PCurveMixture`.
+    '''
 
     def __init__(self, pvals1, pvals2, effect_size_prior = 1.5, **sampler_kwargs):
-        '''
-        Fits p-curve mixture model for two within-subject hypothesis tests
-        applied to the SAME group of subjects. Estimates the difference in
-        prevalence of the two effects tested, again in the SAME subjects.
-        (If instead you want to compare prevalence of the same effect in two
-        different groups of subjects, i.e. a "between group" difference, you
-        can just fit a `PCurveMixture` to each group individually and
-        subtract posterior samples from the two models to get samples from the
-        posterior of the difference.)
 
-        We assume that the effect size for each test is fixed, i.e. no
-        effect size information is explicitly pooled between tests.
-        However, we account for the possibility that expressing H1 makes a
-        subject more likely to express H2 or the reverse. (The degree of such
-        covariation is something the model learns from the data.)
-
-        Arguments
-        ---------
-        pvals1 : np.array of size (n_subjects,)
-            The observed p-values for hypothesis test of H0 vs. H1.
-        pvals2 : np.array of size (n_subjects,)
-            The observed p-values for hypotheiss test of H0 vs. H2.
-            Order
-        effect_size_prior : float
-            Mean of the exponential distribution used as an effect size prior.
-
-        Notes
-        ---------
-        I had to do some PyMC trickery to get PyMC to account for covariation
-        between H1 and H2 prevalence the way we need it to, at the cost of
-        being able to use built-in model comparison techniques as in the
-        main `PCurveMixture` class. If you want to compare to the H0 only model
-        or H1/H2 only models, then you should do that for H1 and H2 individually
-        using `PCurveMixture`.
-        '''
         try:
             assert(len(pvals1) == len(pvals2))
         except:
@@ -267,7 +281,7 @@ class PCurveWithinGroupDifference:
 
             # probabilities of combinations of H0, H1, and H2 being true
             k = pm.Dirichlet('prevalence', np.ones(4)) # prior
-            k00, k10, k01, k11 = k[0], k[1], k[2], k[3] # notation from Ince 
+            k00, k10, k01, k11 = k[0], k[1], k[2], k[3] # notation from Ince
             prev1 = pm.Deterministic('prevalence_H1', k10 + k11)
             prev2 = pm.Deterministic('prevalence_H2', k01 + k11)
             pm.Deterministic('prevalence_diff', prev2 - prev1)
