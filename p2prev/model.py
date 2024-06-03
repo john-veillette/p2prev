@@ -81,6 +81,10 @@ class PCurveMixture:
         self.sampler_kwargs = sampler_kwargs
 
     def fit(self):
+        '''
+        Fits model. Must be called before doing anything else (except prior
+        predictive simulation).
+        '''
         with pm.Model() as mixture_model:
             # define model
             delta = pm.Exponential('effect_size', lam = 1/self.prior)
@@ -102,6 +106,9 @@ class PCurveMixture:
 
     @property
     def map(self):
+        '''
+        maximum a-posteriori estimate of prevalence
+        '''
         try:
             return 1. * pm.find_MAP(
                 model = self._model, progressbar = False
@@ -110,6 +117,10 @@ class PCurveMixture:
             self.mixture # trigger not-yet-fit exception
 
     def fit_alternative(self):
+        '''
+        Fits alternative models. Must be called before model comparison
+        can be performed.
+        '''
         with pm.Model() as alltrue_model:
             # define model
             delta = pm.Exponential('effect_size', lam = 1/self.prior)
@@ -125,15 +136,24 @@ class PCurveMixture:
 
     @property
     def mixture(self):
+        '''
+        The trace of the fit mixture model.
+        '''
         if self._mix is None:
             raise Exception('Must call `PCurveMixture.fit()` first!')
         else:
             return self._mix
 
     def summary(self, **summary_kwargs):
+        '''
+        Gives summary of posteriors for model parameters.
+        '''
         return az.summary(self.mixture, **summary_kwargs)
 
     def plot_trace(self, **kwargs):
+        '''
+        Plots posterior traces.
+        '''
         return az.plot_trace(self.mixture, **kwargs)
 
     @property
@@ -144,6 +164,11 @@ class PCurveMixture:
             return self._H1
 
     def compare(self):
+        '''
+        Performs model comaprison of mixture model against all-null and
+        all-alternative models. This method can't be called until you've called
+        the .fit_alternative() method.
+        '''
         # compute loo-likelihood for sampled H1 & H1/H0 models
         ic = 'loo'
         scale = 'log'
@@ -162,28 +187,63 @@ class PCurveMixture:
         return az.compare(ics_dict, ic, method = 'stacking', scale = scale)
 
     def plot_compare(self, **plot_kwargs):
+        '''
+        Plots model comparison
+        '''
         comp = self.compare()
         return az.plot_compare(comp, **plot_kwargs)
 
     @property
     def prevalence(self):
+        '''
+        posterior samples for prevalence parameters
+        '''
         return self.mixture.posterior.prevalence.values.flatten()
 
     def prevalence_hdi(self, hdi_prob = .95):
+        '''
+        HDI (default 95%) for prevalence parameters
+
+        Arguments
+        ----------
+        hdi_prob : float
+            Width of highest-density interval to return.
+        '''
         return az.hdi(self.prevalence, hdi_prob = hdi_prob)
 
     @property
     def effect_size(self):
+        '''
+        posterior samples for abstract effect size
+        '''
         return self.mixture.posterior.effect_size.values.flatten()
 
     def effect_size_hdi(hdi_prob = .95):
+        '''
+        HDI (default 95%) for abstract effect size
+
+        Arguments
+        ----------
+        hdi_prob : float
+            Width of highest-density interval to return.
+        '''
         return az.hdi(self.effect_size, hdi_prob = hdi_prob)
 
     def posterior_predictive_power(self, alpha):
+        '''
+        Posterior samples for within-subject power given alternative hypothesis
+        is true. Returned as pandas DataFrame with prevalence samples, so can
+        be plotted as a joint distribution.
+        '''
         pows = p_cdf(alpha, self.effect_size)
         return pd.DataFrame({'prevalence': self.prevalence, 'power': pows})
 
     def prior_predictive_power(self, alpha, random_seed = 0):
+        '''
+        Prior samples for within-subject power given alternative hypothesis is
+        true. Returned as pandas DataFrame with prevalence samples, so can be
+        plotted as a joint distribution.
+        '''
         rng = np.random.default_rng(random_seed)
         try:
             n = self.effect_size.size
@@ -195,10 +255,32 @@ class PCurveMixture:
         return pd.DataFrame({'prevalence': prev, 'power': pows})
 
     def posterior_predictive_power_hdi(self, alpha, hdi_prob = .95):
+        '''
+        Posterior HDI for within-subject effect size at a given
+        significance level.
+
+        Arguments
+        ----------
+        alpha : float
+            Significance level for which to get posterior power .
+        hdi_prob : float
+            Width of highest-density interval to return.
+        '''
         pow = self.posterior_predictive_power(alpha)
         return az.hdi(pow.power.to_numpy(), hdi_prob = hdi_prob)
 
     def prior_predictive_power_hdi(self, alpha, hdi_prob = .95):
+        '''
+        HDI under prior for within-subject effect size at a given
+        significance level.
+
+        Arguments
+        ----------
+        alpha : float
+            Significance level for which to get posterior power .
+        hdi_prob : float
+            Width of highest-density interval to return.
+        '''
         pow = self.prior_predictive_power(alpha)
         return az.hdi(pow.power.to_numpy(), hdi_prob = hdi_prob)
 
@@ -270,6 +352,9 @@ class PCurveWithinGroupDifference:
         self.sampler_kwargs = sampler_kwargs
 
     def fit(self):
+        '''
+        fits model
+        '''
         with pm.Model() as mixture_model:
 
             # define likelihoods of p-values under H0, H1, and H2
@@ -317,12 +402,18 @@ class PCurveWithinGroupDifference:
 
     @property
     def mixture(self):
+        '''
+        the trace of the fit model
+        '''
         if self._mix is None:
             raise Exception('Must call `PCurveMixture.fit()` first!')
         else:
             return self._mix
 
     def summary(self, **summary_kwargs):
+        '''
+        returns a summary of the posterior
+        '''
         if len(summary_kwargs) == 0:
             summary_kwargs['var_names'] = [
                 'effect_size', 'effect_size_diff',
@@ -332,6 +423,9 @@ class PCurveWithinGroupDifference:
         return az.summary(self.mixture, **summary_kwargs)
 
     def plot_trace(self, **kwargs):
+        '''
+        plots the traces for parameters
+        '''
         if len(kwargs) == 0:
             kwargs['var_names'] = [
                 'effect_size', 'effect_size_diff',
@@ -342,10 +436,16 @@ class PCurveWithinGroupDifference:
 
     @property
     def prevalence_H1(self):
+        '''
+        posterior samples for H1 prevalence
+        '''
         return self.mixture.posterior.prevalence_H1.values.flatten()
 
     @property
     def prevalence_H2(self):
+        '''
+        posterior samples for H2 prevalence
+        '''
         return self.mixture.posterior.prevalence_H2.values.flatten()
 
     @property
@@ -365,15 +465,26 @@ class PCurveWithinGroupDifference:
     def prevalence_diff_hdi(self, hdi_prob = .95):
         '''
         HDI for H2 prevalence minus H1 prevalence
+
+        Arguments
+        ----------
+        hdi_prob : float
+            Width of highest-density interval to return.
         '''
         return az.hdi(self.prevalence_diff, hdi_prob = hdi_prob)
 
     @property
     def effect_size_H1(self):
+        '''
+        posterior samples for relative effect size of H1
+        '''
         return self.mixture.posterior.effect_size.values[..., 0].flatten()
 
     @property
     def effect_size_H2(self):
+        '''
+        posterior samples for relative effect size of H2
+        '''
         return self.mixture.posterior.effect_size.values[..., 1].flatten()
 
     @property
@@ -393,6 +504,11 @@ class PCurveWithinGroupDifference:
     def effect_size_diff_hdi(self, hdi_prob = .95):
         '''
         HDI for H2 - H1 effect sizes
+
+        Arguments
+        ----------
+        hdi_prob : float
+            Width of highest-density interval to return.
         '''
         return az.hdi(self.effect_size_diff, hdi_prob = hdi_prob)
 
@@ -400,6 +516,11 @@ class PCurveWithinGroupDifference:
         '''
         posterior samples for power given H2 minus power given H1
         at a given significance level `alpha`.
+
+        Arguments
+        ----------
+        alpha : float
+            Significance level for which to get posterior power .
         '''
         pow1 = p_cdf(alpha, self.effect_size_H1)
         pow2 = p_cdf(alpha, self.effect_size_H2)
@@ -407,5 +528,15 @@ class PCurveWithinGroupDifference:
         return pow_diff
 
     def power_diff_hdi(self, alpha, hdi_prob = .95):
+        '''
+        HDI for difference in within-subject power
+
+        Arguments
+        ----------
+        alpha : float
+            Significance level for which to get posterior power .
+        hdi_prob : float
+            Width of highest-density interval to return.
+        '''
         pow = self.power_diff(alpha)
         return az.hdi(pow, hdi_prob = hdi_prob)
