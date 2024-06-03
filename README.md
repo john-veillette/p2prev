@@ -19,7 +19,7 @@ model.summary() # prints results
 
 `PCurveMixture` results can be compared between two independent groups to estimate between-group differences in effect prevalence or in within-subject effect size (given that the subject shows the effect), for which we provide an [example]([PCurveMixture](https://github.com/john-veillette/p2prev/blob/main/examples/absolute-pitch.ipynb)). We also provide a `p2prev.PCurveWithinGroupDifference` class for estimating the prevalence difference between two tests performed on the same group of subjects (or e.g. the same group of subjects is given the same test in two experimental conditions).
 
-Check out our [tutorial examples](https://github.com/john-veillette/p2prev/tree/main/examples) and Documentation for details.
+Check out our [tutorial examples](https://github.com/john-veillette/p2prev/tree/main/examples) and [Documentation](http://p2prev.readthedocs.io/) for details.
 
 ### Installation
 
