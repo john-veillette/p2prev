@@ -228,7 +228,7 @@ class PCurveWithinGroupDifference:
         Subject order should be the same as in `pvals`.
     effect_size_prior : float
         Mean of the exponential distribution used as an effect size prior.
-    **sampler_kwargs 
+    **sampler_kwargs
         You can input any valid argument to `pymc.sample` if you wish the change
         the Monte-Carlo sampling settings. By default, 5 chains of 1000 samples
         will be drawn from the posterior, and this will be distributed across
