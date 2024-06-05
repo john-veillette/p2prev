@@ -44,3 +44,5 @@ but do so at your own peril! I may sometimes break things as I work on the devel
 We have minted a DOI so that you can cite the `p2prev` package (or other contents of this repository) and be confident that the link in your citation will always lead to the same place. The DOI for the current version should always be near the top of this page on GitHub, or you can use the permanent DOI ([10.5281/zenodo.11459064](https://zenodo.org/doi/10.5281/zenodo.11459064)), which always links to the latest release.
 
 We hope to release a manuscript describing the $p$-curve mixture method soon, after which we will post a citation for that here. If you use $p$-curve mixtures for prevalence estimation, with or without the `p2prev` package, please be so kind as to cite our work. 
+
+Importantly, `p2prev` is only a wrapper around a model implemented with the excellent [PyMC](https://www.pymc.io/) package, which performs the hardest parts of model fitting for us. So if you use `p2prev`, please also [cite PyMC](https://doi.org/10.7717/peerj-cs.1516) so its developers can get credit for their work. 
