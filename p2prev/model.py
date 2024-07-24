@@ -370,6 +370,10 @@ class PCurveWithinGroupDifference:
             prev1 = pm.Deterministic('prevalence_H1', k10 + k11)
             prev2 = pm.Deterministic('prevalence_H2', k01 + k11)
             pm.Deterministic('prevalence_diff', prev2 - prev1)
+            pm.Deterministic('prob_H2_given_H1', k11 / prev1)
+            pm.Deterministic('prob_H2_given_H0', k01 / (1 - prev1))
+            pm.Deterministic('prob_H1_given_H2', k11 / prev2)
+            pm.Deterministic('prob_H1_given_H0', k10 / (1 - prev2))
 
             # define likelihoods for combinations of H0, H1, and H2 being true
             H1_logl_1 = pm.logp(pcurve_H1, self._ps1)
@@ -447,6 +451,34 @@ class PCurveWithinGroupDifference:
         posterior samples for H2 prevalence
         '''
         return self.mixture.posterior.prevalence_H2.values.flatten()
+
+    @property
+    def prob_H2_given_H1(self):
+        '''
+        posterior samples for H2 prevalence
+        '''
+        return self.mixture.posterior.prob_H2_given_H1.values.flatten()
+
+    @property
+    def prob_H2_given_H0(self):
+        '''
+        posterior samples for H2 prevalence
+        '''
+        return self.mixture.posterior.prob_H2_given_H0.values.flatten()
+
+    @property
+    def prob_H1_given_H2(self):
+        '''
+        posterior samples for H2 prevalence
+        '''
+        return self.mixture.posterior.prob_H1_given_H2.values.flatten()
+
+    @property
+    def prob_H1_given_H0(self):
+        '''
+        posterior samples for H2 prevalence
+        '''
+        return self.mixture.posterior.prob_H1_given_H0.values.flatten()
 
     @property
     def prevalence_diff(self):
