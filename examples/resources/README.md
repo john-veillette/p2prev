@@ -1,1 +1,3 @@
 Files in this folder contain data from published studies (see notebooks in "examples" folder for details). If you use these datasets in our own work, please cite the original studies rather than this repository. All datasets are made available under their original licenses.
+
+Data files in the `eeg` folder include within-subject decoding results that were not in the original [Veillette et al. (2023)](https://doi.org/10.1523/JNEUROSCI.1116-23.2023) paper, which reported between-subject decoding results. The code for generating these results from the Veillette et al.'s (2023) [_OpenNeuro_ dataset](https://doi.org/10.18112/openneuro.ds004561.v1.0.0) can be found in `eeg/generate_eeg_pvals.py`. 
