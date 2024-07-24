@@ -12,6 +12,8 @@ The notebooks in this folder are meant to provide tutorial-style documentation f
 
 `absolute-pitch.ipynb` provides another example of fitting $p$-curve models to estimate prevalence in a real dataset, and it illustrates a concrete use case: estimating differences in effect prevalence and in within-subject effect size between two groups of subjects. This example is a good motivating example, since jointly estimating prevalence and within-subject effect size leads to a qualitatively different conclusion than would methods which assume the latter is fixed. 
 
+`eeg-decoding.ipynb` provides an example for using within-group prevalence difference models and for estimating group-conditional prevalences when group membership is not known a priori. 
+
 ### For advanced users 
 
 `bayes-factor.ipynb` provides an example of comparing the $p$-curve mixture model to null-only and alternative-only models using Bayes Factors, instead of using `p2prev`'s built-in model comparison functionality. I think this approach to model comparison is conceptually superior to the built-in functionality in many cases (for reasons discussed in the notebook), but estimatation of Bayes Factors is not sufficiently numerically stable to incorporate into the main `p2prev` package. This means that, for now, users wishing to use Bayes Factors will have to interface with [PyMC](https://www.pymc.io) directly. 
