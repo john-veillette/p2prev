@@ -3,7 +3,7 @@ import sys
 
 setup(
     name = 'p2prev',
-    version = '0.0.1',
+    version = '0.1.0',
     description = 'estimating population prevalence from unthresholded p-values from repeated n=1 experiments',
     url = 'https://github.com/john-veillette/p2prev',
     author = 'John Veillette',
