@@ -455,28 +455,30 @@ class PCurveWithinGroupDifference:
     @property
     def prob_H2_given_H1(self):
         '''
-        posterior samples for H2 prevalence
+        posterior samples for H2 prevalence given that H1 is true;
+        that is, the prevalence of H2 being true among the subpopulation
+        in which H1 is true
         '''
         return self.mixture.posterior.prob_H2_given_H1.values.flatten()
 
     @property
     def prob_H2_given_H0(self):
         '''
-        posterior samples for H2 prevalence
+        posterior samples for H2 prevalence given that H1 is false
         '''
         return self.mixture.posterior.prob_H2_given_H0.values.flatten()
 
     @property
     def prob_H1_given_H2(self):
         '''
-        posterior samples for H2 prevalence
+        posterior samples for H1 prevalence given that H2 is true
         '''
         return self.mixture.posterior.prob_H1_given_H2.values.flatten()
 
     @property
     def prob_H1_given_H0(self):
         '''
-        posterior samples for H2 prevalence
+        posterior samples for H2 prevalence given that H2 is false
         '''
         return self.mixture.posterior.prob_H1_given_H0.values.flatten()
 
