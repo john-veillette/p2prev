@@ -22,6 +22,10 @@ model.summary() # prints results
 
 Check out our [tutorial examples](https://github.com/john-veillette/p2prev/tree/main/examples) and [Documentation](http://p2prev.readthedocs.io/) for details.
 
+### Graphical user interface
+
+For users unfamiliar with Python, some of the basic functionality can be accessed online through a [Shiny app interface](https://jveillette.shinyapps.io/p2prev/), where _p_-values can simply be uploaded in a .csv file. This will generally be much slower, so be prepared to wait around for a while while models take over a minute (versus less than ten seconds locally) to fit. For more advanced functionality and full control of parameters, you will want to use Python instead.
+
 ### Installation
 
 We recommend installing `pymc` before trying to install `p2prev`. (I recommend version 5.0 or greater, though I think `p2prev` will run with Version 4.) Installing `p2prev` as below will attempt to install `pymc` using Pip, but I find that `pymc` is much more likely to install correctly using Anaconda as suggested in the [PyMC documentation](https://www.pymc.io/projects/docs/en/latest/installation.html).
