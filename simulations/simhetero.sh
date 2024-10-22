@@ -2,7 +2,7 @@
 #SBATCH --job-name=simhetero
 #SBATCH --output=out/simhetero_%A_%a.out
 #SBATCH --error=out/simhetero_%A_%a.err
-#SBATCH --time=00:10:00
+#SBATCH --time=00:20:00
 #SBATCH --partition=caslake
 #SBATCH --account=pi-hcn1
 #SBATCH --nodes=1

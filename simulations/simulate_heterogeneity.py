@@ -33,7 +33,7 @@ def run_simulation(sigma, seed):
 
 def main(seed):
     results = []
-    for sigma in np.arange(.01, .11, .01):
+    for sigma in np.arange(.01, .21, .01):
         print('Starting sigma = %f'%sigma)
         results.append(run_simulation(sigma, seed))
     df = pd.DataFrame(results)
