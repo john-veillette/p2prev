@@ -23,16 +23,16 @@ EFFSIZE_LOW = .65
 EFFSIZE_HIGH = .75
 
 
-def half_beta_rv(p_mean, size = 1, seed = None):
+def half_beta_rv(p_mean, sigma = .02, size = 1, seed = None):
     '''
     generates a random value between 0.5 and 1.0 with specified mean
     '''
     trunc_mean = (p_mean - .5) * 2
-    a, b = Beta.get_alpha_beta(mu = trunc_mean, sigma = .02)
+    a, b = Beta.get_alpha_beta(mu = trunc_mean, sigma = sigma)
     trunc_rv = beta.rvs(a, b, size = size, random_state = seed)
     return np.squeeze(trunc_rv/2 + .5)
 
-def simulate_subject(prob_correct, seed = None):
+def simulate_subject(prob_correct, seed = None, sigma = .02):
     '''
     Simulates actual (y) and predicted (y_hat) values with,
     on average, the given accuracy.
@@ -40,7 +40,7 @@ def simulate_subject(prob_correct, seed = None):
     if prob_correct == .5:
         accuracy = .5
     else:
-        accuracy = half_beta_rv(prob_correct, seed = seed)
+        accuracy = half_beta_rv(prob_correct, sigma = sigma, seed = seed)
     y = binom.rvs(1, .5, size = N_TRIALS)
     y_not = np.logical_not(y).astype(int)
     correct = binom.rvs(1, accuracy, size = y.size, random_state = seed)
