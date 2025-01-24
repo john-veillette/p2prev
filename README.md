@@ -45,7 +45,7 @@ but do so at your own peril! I may sometimes break things as I work on the devel
 
 ### Citing this package
 
-If you use $p$-curve mixtures for prevalence estimation, with or without the `p2prev` package, please be so kind as to cite our [preprint](https://doi.org/10.1101/2024.07.31.606048) that describes and validates the method. 
+If you use $p$-curve mixtures for prevalence estimation, with or without the `p2prev` package, please be so kind as to cite the [paper](https://doi.org/10.1038/s44271-025-00190-0) where we describe and validates the method. 
 
 We have also minted a DOI so that you can cite the `p2prev` package itself (or other contents of this repository) and be confident that the link in your citation will always lead to the same place. The DOI for the current version should always be near the top of this page on GitHub, or you can use the permanent DOI ([10.5281/zenodo.11459064](https://zenodo.org/doi/10.5281/zenodo.11459064)), which always links to the latest release.
 
